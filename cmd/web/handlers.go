@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -18,6 +20,23 @@ func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
+	}
+
+	// Use the template.ParseFiles() function to read the template file
+	// into a template set.
+	ts, err := template.ParseFiles("./ui/html/home.page.tmpl")
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// We then use the Execute() method on the template set to write
+	// the template content as the respose body. The last parameter to
+	// Execute represents dynamic data that we want to pass in.
+	if err := ts.Execute(w, nil); err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 
 	w.Write([]byte("Hello from Code Snippet!"))
