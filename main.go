@@ -9,6 +9,16 @@ import (
 // slice containing "Hello from Code Snippet!" as the
 // response body.
 func home(w http.ResponseWriter, r *http.Request) {
+
+	// Check if the current request URL path exaclty matches "/".
+	// If it doesn't, the http.NotFound() function triggers to send
+	// a 404 response to the client. Then we return to avoid executing
+	// any following code.
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
 	w.Write([]byte("Hello from Code Snippet!"))
 }
 
