@@ -28,7 +28,18 @@ func showSnippet(w http.ResponseWriter, r *http.Request) {
 }
 
 // Add a createSnippet handler function .
+// curl -i -X POST http://localhost:4000/snippet/create
 func createSnippet(w http.ResponseWriter, r *http.Request) {
+
+	// Use r.Method to check whether the request is using POST or not.
+	// If it's not, use the w.WriteHeader() method to send a 405 status
+	// code, the w.Write() method to write a response body and then
+	// return from the function.
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte("Method not Allowed"))
+		return
+	}
 	w.Write([]byte("Create an new snippet!"))
 }
 
