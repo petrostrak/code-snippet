@@ -27,6 +27,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	files := []string{
 		"./ui/html/home.page.tmpl",
 		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
 	}
 
 	// Use the template.ParseFiles() function to read the template file
@@ -47,7 +48,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 
-	w.Write([]byte("Hello from Code Snippet!"))
 }
 
 // Add a showSnippet handler function.
