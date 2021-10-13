@@ -4,6 +4,11 @@
     <head>
         <meta charset='utf-8'>
         <title>{{template "title" .}} - Code Snippet</title>
+        <!-- Link to the CSS stylesheet and favicon -->
+        <link rel='stylesheet' href='/static/css/main.css'>
+        <link rel='shortcut icon' href='/static/img/favicon.ico' type="image/x-icon">
+        <!-- Also link to some fonts hosted by Google -->
+        <link rel='stylesheet' href="https://fonts.googleapis.com/css?family=Tangerine">
     </head>
     <body>
         <header>
@@ -15,7 +20,9 @@
         <section>
             {{template "body" .}}
         </section>
-        {{template "footer"}}
+        {{template "footer" .}}
+        <!-- And include the JavaScript file -->
+        <script src="/static/js/main.js" type="text/javascript"></script>
     </body>
 </html>
 {{end}}
