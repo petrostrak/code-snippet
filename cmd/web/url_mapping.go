@@ -54,12 +54,21 @@ func StartApp() {
 	// "/static" from the URL path before passing it to http.FileServer.
 	mux.Handle("/static/", http.StripPrefix("/static", fs))
 
-	// Use the http.ListenAndServe() function to start a new web server. We pass
-	// two parameters: the TCP network address to listen on (in this case ":4000)
-	// and the servemux we just created. If http.ListenAndServe() returns an error
-	// we use the log.Fatal() function to log the error message and exit.
+	// Initialize a new http.Server struct. We set the Addr and Handler fields
+	// that the server uses the same network address and routes as before, and
+	// the ErrorLog field so that the server now uses the custom errorLog logger.
+	svr := &http.Server{
+		Addr:     *addr,
+		ErrorLog: errorLog,
+		Handler:  mux,
+	}
+
 	infoLog.Printf("Starting server on %s\n", *addr)
-	if err := http.ListenAndServe(*addr, mux); err != nil {
+
+	// Call the ListenAndServe() method on our new http.Server struct.
+	// If svr.ListenAndServe() returns an error we use the log.Fatal()
+	// function to log the error message and exit.
+	if err := svr.ListenAndServe(); err != nil {
 		errorLog.Fatal(err)
 	}
 }
