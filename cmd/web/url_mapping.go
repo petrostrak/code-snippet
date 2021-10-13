@@ -6,6 +6,8 @@ import (
 )
 
 var (
+	// http.ServeMux is also a handler, which instead of providing
+	// a response itself passes the request on to a second handler.
 	mux *http.ServeMux
 )
 
