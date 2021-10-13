@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 )
 
 var (
@@ -25,6 +26,13 @@ func StartApp() {
 
 	// Importantly, we use the flag.Parse() to parse the command-line imput.
 	flag.Parse()
+
+	// Create a new logger for writting information messages.
+	infoLog := log.New(os.Stdout, "[INFO]\t", log.Ldate|log.Ltime)
+
+	// Create a new logger for writting error messages. The log.Lshortfile flag to
+	// include the relevant file name and line number
+	errorLog := log.New(os.Stderr, "[ERROR]\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// Use the http.NewServeMux() function to initialize a
 	// new servemux, then register the home function as the
@@ -50,8 +58,8 @@ func StartApp() {
 	// two parameters: the TCP network address to listen on (in this case ":4000)
 	// and the servemux we just created. If http.ListenAndServe() returns an error
 	// we use the log.Fatal() function to log the error message and exit.
-	log.Printf("Starting server on %s\n", *addr)
+	infoLog.Printf("Starting server on %s\n", *addr)
 	if err := http.ListenAndServe(*addr, mux); err != nil {
-		log.Fatal(err)
+		errorLog.Fatal(err)
 	}
 }
