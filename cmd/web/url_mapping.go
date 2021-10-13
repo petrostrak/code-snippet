@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 )
@@ -16,6 +17,15 @@ func init() {
 }
 
 func StartApp() {
+
+	// Define a new command-line flag with the name 'addr', a default value
+	// and some sort help text explaining what the flag controls. The value
+	// of the flag will be stored in the addr variable at runtime.
+	addr := flag.String("addr", ":4000", "HTTP network address")
+
+	// Importantly, we use the flag.Parse() to parse the command-line imput.
+	flag.Parse()
+
 	// Use the http.NewServeMux() function to initialize a
 	// new servemux, then register the home function as the
 	// handler for the "/" URL pattern.
@@ -40,8 +50,8 @@ func StartApp() {
 	// two parameters: the TCP network address to listen on (in this case ":4000)
 	// and the servemux we just created. If http.ListenAndServe() returns an error
 	// we use the log.Fatal() function to log the error message and exit.
-	log.Println("Starting server on :4000")
-	if err := http.ListenAndServe(":4000", mux); err != nil {
+	log.Printf("Starting server on %s\n", *addr)
+	if err := http.ListenAndServe(*addr, mux); err != nil {
 		log.Fatal(err)
 	}
 }
