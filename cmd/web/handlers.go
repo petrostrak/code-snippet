@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -11,7 +10,7 @@ import (
 // Define a home hundler function which writes a byte of
 // slice containing "Hello from Code Snippet!" as the
 // response body.
-func home(w http.ResponseWriter, r *http.Request) {
+func (a *application) home(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the current request URL path exaclty matches "/".
 	// If it doesn't, the http.NotFound() function triggers to send
@@ -35,7 +34,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// a variadic parameter.
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Println(err.Error())
+		a.errorLog.Println(err.Error())
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -44,14 +43,14 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// the template content as the respose body. The last parameter to
 	// Execute represents dynamic data that we want to pass in.
 	if err := ts.Execute(w, nil); err != nil {
-		log.Println(err.Error())
+		a.errorLog.Println(err.Error())
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 
 }
 
 // Add a showSnippet handler function.
-func showSnippet(w http.ResponseWriter, r *http.Request) {
+func (a *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 	// Extract the value of the id parameter from the query string
 	// and try to convert it to an integer using the strconv.Atoi()
@@ -71,7 +70,7 @@ func showSnippet(w http.ResponseWriter, r *http.Request) {
 
 // Add a createSnippet handler function .
 // curl -i -X POST http://localhost:4000/snippet/create
-func createSnippet(w http.ResponseWriter, r *http.Request) {
+func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 
 	// Use r.Method to check whether the request is using POST or not.
 	// If it's not, use the w.WriteHeader() method to send a 405 status
