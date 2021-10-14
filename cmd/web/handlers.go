@@ -67,7 +67,7 @@ func (a *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 }
 
 // Add a createSnippet handler function .
-// curl -i -X POST http://localhost:4000/snippet/create
+// curl -i -X POST http://localhost:8080/snippet/create
 func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 
 	// Use r.Method to check whether the request is using POST or not.
@@ -86,5 +86,19 @@ func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		a.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
-	w.Write([]byte("Create an new snippet!"))
+
+	// Some dummy data
+	title := "0 snail"
+	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi"
+	expires := "7"
+
+	// Pass the data to the SnippetModel.Insert() receiving the ID of the new record back.
+	id, err := a.snippet.Insert(title, content, expires)
+	if err != nil {
+		a.serverError(w, err)
+		return
+	}
+
+	// Redirect the user to the relevant page for the snippet.
+	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
 }
