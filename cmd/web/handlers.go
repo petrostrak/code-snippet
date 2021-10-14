@@ -17,7 +17,7 @@ func (a *application) home(w http.ResponseWriter, r *http.Request) {
 	// a 404 response to the client. Then we return to avoid executing
 	// any following code.
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		a.notFound(w)
 		return
 	}
 
@@ -34,8 +34,7 @@ func (a *application) home(w http.ResponseWriter, r *http.Request) {
 	// a variadic parameter.
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		a.errorLog.Println(err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		a.serverError(w, err)
 		return
 	}
 
@@ -43,8 +42,7 @@ func (a *application) home(w http.ResponseWriter, r *http.Request) {
 	// the template content as the respose body. The last parameter to
 	// Execute represents dynamic data that we want to pass in.
 	if err := ts.Execute(w, nil); err != nil {
-		a.errorLog.Println(err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		a.serverError(w, err)
 	}
 
 }
@@ -58,7 +56,7 @@ func (a *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	// is less that 1, we return a 404 not found response.
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		a.notFound(w)
 		return
 	}
 
@@ -83,10 +81,9 @@ func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		// and the second parameter is the header value.
 		w.Header().Set("Allow", http.MethodPost)
 
-		// Use the http.Error() function to send a 405  status code and
-		// "Method not Allowed" string as the response body instead of
-		// the WriteHeader(http.StatusMethodNotAllowed)
-		http.Error(w, "Method not Allowed", http.StatusMethodNotAllowed)
+		// The clientError helper sends a specific status code and corresponding
+		// description to the user.
+		a.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 	w.Write([]byte("Create an new snippet!"))
