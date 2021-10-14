@@ -7,21 +7,11 @@ import (
 	"os"
 )
 
-var (
-	// http.ServeMux is also a handler, which instead of providing
-	// a response itself passes the request on to a second handler.
-	mux *http.ServeMux
-)
-
 // Define an application struct to hold the application-wide dependencies for
 // the web-app.
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
-}
-
-func init() {
-	mux = http.NewServeMux()
 }
 
 func StartApp() {
@@ -47,33 +37,13 @@ func StartApp() {
 		infoLog:  infoLog,
 	}
 
-	// Use the http.NewServeMux() function to initialize a
-	// new servemux, then register the home function as the
-	// handler for the "/" URL pattern.
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet", app.showSnippet)
-	mux.HandleFunc("/snippet/create", app.createSnippet)
-
-	// Create a file server which serves files out of the ./ui/static/ dir.
-	// Note that the path given to the http.Dir() function is relative to the
-	// project directory root.
-	fs := http.FileServer(http.Dir("./ui/static/"))
-
-	// Use the mux.Handle() to register the file server as the handler for
-	// all URL paths that start with "/static". When the handler receives a
-	// request, it will remove the leading slash from the URL path and then
-	// search the ./ui/static directory for the corresponding file to send
-	// to the user. So, for this to work correctly, we must strip the leading
-	// "/static" from the URL path before passing it to http.FileServer.
-	mux.Handle("/static/", http.StripPrefix("/static", fs))
-
 	// Initialize a new http.Server struct. We set the Addr and Handler fields
 	// that the server uses the same network address and routes as before, and
 	// the ErrorLog field so that the server now uses the custom errorLog logger.
 	svr := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  mux,
+		Handler:  app.routes(),
 	}
 
 	infoLog.Printf("Starting server on %s\n", *addr)
