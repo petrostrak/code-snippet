@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"log"
 	"net/http"
 	"os"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // Define an application struct to hold the application-wide dependencies for
@@ -21,6 +24,8 @@ func StartApp() {
 	// of the flag will be stored in the addr variable at runtime.
 	addr := flag.String("addr", ":4000", "HTTP network address")
 
+	// Define a new command-line flag for the MySQL DSN string.
+	dsn := flag.String("dsn", "ptrak:Password!@#$@/codesnippet?parseTime=true", "MySQL database")
 	// Importantly, we use the flag.Parse() to parse the command-line imput.
 	flag.Parse()
 
@@ -30,6 +35,15 @@ func StartApp() {
 	// Create a new logger for writting error messages. The log.Lshortfile flag to
 	// include the relevant file name and line number
 	errorLog := log.New(os.Stderr, "[ERROR]\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	db, err := openDB(*dsn)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
+	// We also defer a call to db.Close() so that the connection pool is closed
+	// before the main() returns.
+	defer db.Close()
 
 	// Initialize a new instance of application containing the dependencies.
 	app := &application{
@@ -54,4 +68,23 @@ func StartApp() {
 	if err := svr.ListenAndServe(); err != nil {
 		errorLog.Fatal(err)
 	}
+}
+
+// The openDB() function wraps sql.Open() and returns an sql.DB connection pool
+// for a given DSN
+func openDB(dsn string) (*sql.DB, error) {
+
+	// The sql.Open() function doesn’t actually create any connections, all
+	// it does is initialize the pool for future use. Actual connections to the
+	// database are established lazily.
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
