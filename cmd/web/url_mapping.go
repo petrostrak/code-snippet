@@ -17,7 +17,7 @@ import (
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
-	snippet  *mysql.SnippetModel
+	snippets *mysql.SnippetModel
 }
 
 func StartApp() {
@@ -54,7 +54,7 @@ func StartApp() {
 		infoLog:  infoLog,
 		// Initialize a mysql.SnippetModel instance and add it to the application
 		// dependencies.
-		snippet: &mysql.SnippetModel{DB: db},
+		snippets: &mysql.SnippetModel{DB: db},
 	}
 
 	// Initialize a new http.Server struct. We set the Addr and Handler fields

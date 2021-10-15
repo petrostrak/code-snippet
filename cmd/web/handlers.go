@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/petrostrak/code-snippet/pkg/models"
 )
 
 // Define a home hundler function which writes a byte of
@@ -60,10 +62,19 @@ func (a *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s, err := a.snippets.Get(id)
+	if err == models.ErrNoRecord {
+		a.notFound(w)
+		return
+	} else if err != nil {
+		a.serverError(w, err)
+		return
+	}
+
 	// Use the fmt.Fprintf function to interpolate the id value with our
 	// response and write it to the http.ResponseWriter.
-	fmt.Fprintf(w, "Display a specific snippet with id %d\n", id)
-	w.Write([]byte("Display a specific snippet!"))
+	fmt.Fprintf(w, "%v", s)
+
 }
 
 // Add a createSnippet handler function .
@@ -93,7 +104,7 @@ func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	expires := "7"
 
 	// Pass the data to the SnippetModel.Insert() receiving the ID of the new record back.
-	id, err := a.snippet.Insert(title, content, expires)
+	id, err := a.snippets.Insert(title, content, expires)
 	if err != nil {
 		a.serverError(w, err)
 		return
