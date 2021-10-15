@@ -12,7 +12,9 @@ func init() {
 	mux = http.NewServeMux()
 }
 
-func (a *application) routes() *http.ServeMux {
+// Update the signature for the routes() so that it returnst a
+// http.Handler instead of a *http.ServeMux
+func (a *application) routes() http.Handler {
 	// Use the http.NewServeMux() function to initialize a
 	// new servemux, then register the home function as the
 	// handler for the "/" URL pattern.
@@ -33,5 +35,8 @@ func (a *application) routes() *http.ServeMux {
 	// "/static" from the URL path before passing it to http.FileServer.
 	mux.Handle("/static/", http.StripPrefix("/static", fs))
 
-	return mux
+	// Pass the servemux as a 'next' parameter to the secureHeaders middleware.
+	// Because secureHeaders is just a function, and the function returns a
+	// http.Handler we don't need to do anything else.
+	return secureHeaders(mux)
 }
