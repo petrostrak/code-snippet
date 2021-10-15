@@ -39,5 +39,5 @@ func (a *application) routes() http.Handler {
 	// Because secureHeaders is just a function, and the function returns a
 	// http.Handler we don't need to do anything else.
 	//Wrapping the existing chain with the logRequest middleware.
-	return a.logRequest(secureHeaders(mux))
+	return a.recoverPanic(a.logRequest(secureHeaders(mux)))
 }
