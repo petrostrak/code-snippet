@@ -12,9 +12,11 @@
                 <th>ID</th>
             </tr>
             {{range .Snippets}}
-                <td><a href='/snippet?id={{.ID}}'>{{.Title}}</a></td>
-                <td>{{.Created}}</td>
-                <td>#{{.ID}}</td>
+                <tr>
+                    <td><a href='/snippet?id={{.ID}}'>{{.Title}}</a></td>
+                    <td>{{.Created}}</td>
+                    <td>#{{.ID}}</td>
+                </tr>
             {{end}}
         </table>
     {{else}}
