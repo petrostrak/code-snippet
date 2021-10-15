@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
 
 // The serverError helper writes an error message and stack trace to the errorLog
@@ -44,15 +45,27 @@ func (a *application) render(w http.ResponseWriter, r *http.Request, name string
 	// Initialize a new buffer
 	buf := new(bytes.Buffer)
 
-	// Execute the template set, passing in any dynamic data.
+	// Execute the template set, passing in any dynamic data with
+	// the current year injected.
 	// Write the template to the buffer, instead of straight to
 	// the http.ResponseWriter. If there's an error, call our
 	// serverError helper and return
-	if err := ts.Execute(buf, td); err != nil {
+	if err := ts.Execute(buf, a.addDefaultData(td, r)); err != nil {
 		a.serverError(w, err)
 		return
 	}
 
 	// Write the contents of the buffer to the http.ResponseWriter
 	buf.WriteTo(w)
+}
+
+// Create an addDefaultData helper. This adds the current year to the
+// CurrentYear field, and returns the pointer.
+func (a *application) addDefaultData(td *templateData, r *http.Request) *templateData {
+	if td == nil {
+		td = &templateData{}
+	}
+
+	td.CurrentYear = time.Now().Year()
+	return td
 }
