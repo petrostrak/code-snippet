@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -57,34 +56,10 @@ func (a *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create an instance of a templateData struct holding the snippet data.
-	data := &templateData{Snippet: s}
-
-	// Initialize a slice containing the paths to the show.page.tmpl file
-	// plus the base layout and footer partial.
-	files := []string{
-		"./ui/html/show.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	// Parse the template files.
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		a.serverError(w, err)
-		return
-	}
-
-	// And then execute them. Notice how we are passing in the templateData
-	// struct as the final parameter.
-	if err := ts.Execute(w, data); err != nil {
-		a.serverError(w, err)
-		return
-	}
-
-	// Use the fmt.Fprintf function to interpolate the id value with our
-	// response and write it to the http.ResponseWriter.
-	fmt.Fprintf(w, "%v", s)
+	// Use the render helper
+	a.render(w, r, "show.page.tmpl", &templateData{
+		Snippet: s,
+	})
 
 }
 
