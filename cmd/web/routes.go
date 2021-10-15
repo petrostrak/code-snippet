@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/alice"
+)
 
 var (
 	// http.ServeMux is also a handler, which instead of providing
@@ -15,6 +19,11 @@ func init() {
 // Update the signature for the routes() so that it returnst a
 // http.Handler instead of a *http.ServeMux
 func (a *application) routes() http.Handler {
+
+	// Create a middleware chan containing our 'standard' middleware
+	// which will be used for every request our app receives.
+	standardMiddleware := alice.New(a.recoverPanic, a.logRequest, secureHeaders)
+
 	// Use the http.NewServeMux() function to initialize a
 	// new servemux, then register the home function as the
 	// handler for the "/" URL pattern.
@@ -35,9 +44,6 @@ func (a *application) routes() http.Handler {
 	// "/static" from the URL path before passing it to http.FileServer.
 	mux.Handle("/static/", http.StripPrefix("/static", fs))
 
-	// Pass the servemux as a 'next' parameter to the secureHeaders middleware.
-	// Because secureHeaders is just a function, and the function returns a
-	// http.Handler we don't need to do anything else.
-	//Wrapping the existing chain with the logRequest middleware.
-	return a.recoverPanic(a.logRequest(secureHeaders(mux)))
+	// Return the 'standard' middleware chain followed by the serveMux.
+	return standardMiddleware.Then(mux)
 }
