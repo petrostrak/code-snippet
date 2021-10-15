@@ -29,33 +29,31 @@ func (a *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range s {
-		fmt.Fprintf(w, "%v\n", snippet)
+	data := &templateData{Snippets: s}
+
+	// Initialize a slice containing the paths to the two files. Not that
+	// the home.page.tmpl file must be the *first* file in the slice.
+	files := []string{
+		"./ui/html/home.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
 	}
 
-	// // Initialize a slice containing the paths to the two files. Not that
-	// // the home.page.tmpl file must be the *first* file in the slice.
-	// files := []string{
-	// 	"./ui/html/home.page.tmpl",
-	// 	"./ui/html/base.layout.tmpl",
-	// 	"./ui/html/footer.partial.tmpl",
-	// }
+	// Use the template.ParseFiles() function to read the template file
+	// into a template set. Notice that we can pass the slice of files as
+	// a variadic parameter.
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		a.serverError(w, err)
+		return
+	}
 
-	// // Use the template.ParseFiles() function to read the template file
-	// // into a template set. Notice that we can pass the slice of files as
-	// // a variadic parameter.
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	a.serverError(w, err)
-	// 	return
-	// }
-
-	// // We then use the Execute() method on the template set to write
-	// // the template content as the respose body. The last parameter to
-	// // Execute represents dynamic data that we want to pass in.
-	// if err := ts.Execute(w, nil); err != nil {
-	// 	a.serverError(w, err)
-	// }
+	// We then use the Execute() method on the template set to write
+	// the template content as the respose body. The last parameter to
+	// Execute represents dynamic data that we want to pass in.
+	if err := ts.Execute(w, data); err != nil {
+		a.serverError(w, err)
+	}
 
 }
 
