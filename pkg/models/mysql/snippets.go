@@ -56,8 +56,8 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 	// then row.Scan() will return a sql.ErrNoRows error.
 	err := row.Scan(
 		&s.ID,
+		&s.Title,
 		&s.Content,
-		&s.Created,
 		&s.Created,
 		&s.Expires,
 	)
@@ -74,5 +74,55 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 
 // This will return the 10 most recently created snippets.
 func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
-	return nil, nil
+	// Write the SQL statement
+	stmt := `SELECT id, title, content, created, expires FROM snippets
+			 WHERE expires > UTC_TIMESTAMP() ORDER BY created DESC LIMIT 10`
+
+	// Use the Query() on the connection pool to execute  our SQL statement.
+	// This returns a sql.Rows resultset containing the  result of our query.
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	// We defer rows.Close() to ensure the sql.Rows resultset is always properly
+	// closed before the Latest() returns. This defer statement should come after
+	// the error check, otherwise if Query() returs an error, you'll get a panic
+	// trying to close a nil resultset.
+	defer rows.Close()
+
+	// Initialize an empty slice to hold the resultset.
+	snippets := []*models.Snippet{}
+
+	//Use rows.Next() to iterate through the rows in the resultset. This prepares
+	// the first (and then each subsequent) row to be acted on by the rows.Scan()
+	// method. If iteration over all the rows completes then the resultset automatically
+	// closes itself and frees-up the underlying database connection.
+	for rows.Next() {
+		// Create a pointer to a new zeroed snippet struct
+		s := &models.Snippet{}
+
+		if err := rows.Scan(
+			&s.ID,
+			&s.Title,
+			&s.Content,
+			&s.Created,
+			&s.Expires,
+		); err != nil {
+			return nil, err
+		}
+
+		// Append it to the slice of snippets.
+		snippets = append(snippets, s)
+	}
+
+	// When the rows.Next() loop has finished we call rows.Err() to retrieve any error
+	// that was encountered during the iteration. It's important to call this - don't
+	// assume that a successful iteration was completed over the whole resultset.
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// If everything went OK then return the Snippets slice.
+	return snippets, nil
 }
