@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
 
+	"github.com/petrostrak/code-snippet/pkg/forms"
 	"github.com/petrostrak/code-snippet/pkg/models"
 )
 
@@ -68,54 +67,22 @@ func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use the r.PostForm.Get() method to retrieve the relevant data fields
-	// from the r.PostForm map.
-	//
-	// The r.PostForm map is populated only for POST, PATCH and PUT
-	// requests, and contains the form data from the request body.
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-	expires := r.PostForm.Get("expires")
+	// Create a new forms.Form struct containing the POSTed date from the
+	// form, then use the validation methods to check the content.
+	form := forms.New(r.PostForm)
+	form.Required("title", "content", "expires")
+	form.MaxLength("title", 100)
+	form.PermittedValues("expires", "365", "7", "1")
 
-	// Initialize a map to hold any validation errors.
-	//
-	// More code patterns and validation visit https://www.alexedwards.net/blog/validation-snippets-for-go
-	errors := make(map[string]string)
-
-	// Check that the title field is not blank and not more that 100 characters
-	// long. If it fails either of those checks, add a message to the errors
-	// map using the field name as the key.
-	if strings.TrimSpace(title) == "" {
-		errors["title"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
-		errors["title"] = "This field is too long (maximum is 100 characters)"
-	}
-
-	// Check that the content field isn't blank.
-	if strings.TrimSpace(content) == "" {
-		errors["content"] = "This field cannot be blank"
-	}
-
-	// Check the expires field isn't blank and matches one of the permitted
-	// values ("1", "7" or "365")
-	if strings.TrimSpace(expires) == "" {
-		errors["expires"] = "This field cannot be blank"
-	} else if expires != "365" && expires != "7" && expires != "1" {
-		errors["expires"] = "This field is invalid"
-	}
-
-	// If there are any errors, dump them in a plain text HTTP response and return
-	// from the handler.
-	if len(errors) > 0 {
-		a.render(w, r, "create.page.tmpl", &templateData{
-			FormErrors: errors,
-			FormData:   r.PostForm,
-		})
+	// If the form isn't valid, redisplay the template passing in the
+	// form.Form object as the data.
+	if !form.Valid() {
+		a.render(w, r, "create.page.tmpl", &templateData{Form: form})
 		return
 	}
 
 	// Pass the data to the SnippetModel.Insert() receiving the ID of the new record back.
-	id, err := a.snippets.Insert(title, content, expires)
+	id, err := a.snippets.Insert(form.Get("title"), form.Get("content"), form.Get("expires"))
 	if err != nil {
 		a.serverError(w, err)
 		return
@@ -126,5 +93,8 @@ func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	a.render(w, r, "create.page.tmpl", nil)
+	a.render(w, r, "create.page.tmpl", &templateData{
+		// Pass a new empty forms.Form object to the template.
+		Form: forms.New(nil),
+	})
 }
