@@ -78,5 +78,5 @@ func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Create a new snippet"))
+	a.render(w, r, "create.page.tmpl", nil)
 }
