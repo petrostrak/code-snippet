@@ -61,10 +61,19 @@ func (a *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	// The check of r.Method != "POST" is now superfluous and can be removed.
 
-	// Some dummy data
-	title := "0 snail"
-	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi"
-	expires := "7"
+	if err := r.ParseForm(); err != nil {
+		a.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Use the r.PostForm.Get() method to retrieve the relevant data fields
+	// from the r.PostForm map.
+	//
+	// The r.PostForm map is populated only for POST, PATCH and PUT
+	// requests, and contains the form data from the request body.
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+	expires := r.PostForm.Get("expires")
 
 	// Pass the data to the SnippetModel.Insert() receiving the ID of the new record back.
 	id, err := a.snippets.Insert(title, content, expires)
