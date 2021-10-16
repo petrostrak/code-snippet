@@ -12,15 +12,8 @@ import (
 // slice containing "Hello from Code Snippet!" as the
 // response body.
 func (a *application) home(w http.ResponseWriter, r *http.Request) {
-
-	// Check if the current request URL path exaclty matches "/".
-	// If it doesn't, the http.NotFound() function triggers to send
-	// a 404 response to the client. Then we return to avoid executing
-	// any following code.
-	if r.URL.Path != "/" {
-		a.notFound(w)
-		return
-	}
+	// Because Pat matches the "/" path exactly, we can now remove the manual condition
+	// of r.URL.Path != "/" from this handler.
 
 	s, err := a.snippets.Latest()
 	if err != nil {
@@ -41,7 +34,7 @@ func (a *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	// and try to convert it to an integer using the strconv.Atoi()
 	// function. If it cannot be converted to an integer of the value
 	// is less that 1, we return a 404 not found response.
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		a.notFound(w)
 		return
@@ -66,23 +59,7 @@ func (a *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 // Add a createSnippet handler function .
 // curl -i -X POST http://localhost:8080/snippet/create
 func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
-
-	// Use r.Method to check whether the request is using POST or not.
-	// If it's not, use the w.WriteHeader() method to send a 405 status
-	// code, the w.Write() method to write a response body and then
-	// return from the function.
-	if r.Method != http.MethodPost {
-
-		// Use the Header().Set() method to add an 'Allow: Post' header to
-		// the response header map. The first parameter is the header name
-		// and the second parameter is the header value.
-		w.Header().Set("Allow", http.MethodPost)
-
-		// The clientError helper sends a specific status code and corresponding
-		// description to the user.
-		a.clientError(w, http.StatusMethodNotAllowed)
-		return
-	}
+	// The check of r.Method != "POST" is now superfluous and can be removed.
 
 	// Some dummy data
 	title := "0 snail"
@@ -97,5 +74,9 @@ func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Redirect the user to the relevant page for the snippet.
-	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
+}
+
+func (a *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Create a new snippet"))
 }
