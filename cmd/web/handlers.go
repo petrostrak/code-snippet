@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/petrostrak/code-snippet/pkg/models"
 )
@@ -74,6 +76,40 @@ func (a *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	title := r.PostForm.Get("title")
 	content := r.PostForm.Get("content")
 	expires := r.PostForm.Get("expires")
+
+	// Initialize a map to hold any validation errors.
+	//
+	// More code patterns and validation visit https://www.alexedwards.net/blog/validation-snippets-for-go
+	errors := make(map[string]string)
+
+	// Check that the title field is not blank and not more that 100 characters
+	// long. If it fails either of those checks, add a message to the errors
+	// map using the field name as the key.
+	if strings.TrimSpace(title) == "" {
+		errors["title"] = "This field cannot be blank"
+	} else if utf8.RuneCountInString(title) > 100 {
+		errors["title"] = "This field is too long (maximum is 100 characters)"
+	}
+
+	// Check that the content field isn't blank.
+	if strings.TrimSpace(content) == "" {
+		errors["content"] = "This field cannot be blank"
+	}
+
+	// Check the expires field isn't blank and matches one of the permitted
+	// values ("1", "7" or "365")
+	if strings.TrimSpace(expires) == "" {
+		errors["expires"] = "This field cannot be blank"
+	} else if expires != "365" && expires != "7" && expires != "1" {
+		errors["expires"] = "This field is invalid"
+	}
+
+	// If there are any errors, dump them in a plain text HTTP response and return
+	// from the handler.
+	if len(errors) > 0 {
+		fmt.Fprint(w, errors)
+		return
+	}
 
 	// Pass the data to the SnippetModel.Insert() receiving the ID of the new record back.
 	id, err := a.snippets.Insert(title, content, expires)
