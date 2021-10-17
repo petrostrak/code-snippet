@@ -70,6 +70,7 @@ func StartApp() {
 	// session always expires after 12 hours.
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
+	session.Secure = true
 
 	// Initialize a new instance of application containing the dependencies.
 	app := &application{
@@ -96,7 +97,11 @@ func StartApp() {
 	// Call the ListenAndServe() method on our new http.Server struct.
 	// If svr.ListenAndServe() returns an error we use the log.Fatal()
 	// function to log the error message and exit.
-	if err := svr.ListenAndServe(); err != nil {
+	//
+	// Use the ListenAndServeTLS() to start the HTTP server. We
+	// pass in the paths to the TLS certificate and corresponding private
+	// key.
+	if err := svr.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem"); err != nil {
 		errorLog.Fatal(err)
 	}
 }
