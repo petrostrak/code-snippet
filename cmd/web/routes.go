@@ -25,13 +25,21 @@ func (a *application) routes() http.Handler {
 	// which will be used for every request our app receives.
 	standardMiddleware := alice.New(a.recoverPanic, a.logRequest, secureHeaders)
 
+	//Create a new middleware chain containing the middleware specific to
+	// our dynamix application routes.
+	dynamicMiddleware := alice.New(a.session.Enable)
+
 	// Use the http.NewServeMux() function to initialize a
 	// new servemux, then register the home function as the
 	// handler for the "/" URL pattern.
-	mux.Get("/", http.HandlerFunc(a.home))
-	mux.Get("/snippet/create", http.HandlerFunc(a.createSnippetForm))
-	mux.Post("/snippet/create", http.HandlerFunc(a.createSnippet))
-	mux.Get("/snippet/:id", http.HandlerFunc(a.showSnippet))
+	mux.Get("/", dynamicMiddleware.ThenFunc(a.home))
+	mux.Get("/snippet/create", dynamicMiddleware.ThenFunc(a.createSnippetForm))
+	mux.Post("/snippet/create", dynamicMiddleware.ThenFunc(a.createSnippet))
+
+	// If we don't want to use alice package for managing our middlewares, then we
+	// can simply wrap the handler functions with the session middleware instead
+	// like so
+	mux.Get("/snippet/:id", a.session.Enable(http.HandlerFunc(a.showSnippet)))
 
 	// Create a file server which serves files out of the ./ui/static/ dir.
 	// Note that the path given to the http.Dir() function is relative to the
