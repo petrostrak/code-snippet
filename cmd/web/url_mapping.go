@@ -7,8 +7,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/golangcollege/sessions"
 	"github.com/petrostrak/code-snippet/pkg/models/mysql"
 )
 
@@ -18,6 +20,7 @@ import (
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
+	session       *sessions.Session
 	snippets      *mysql.SnippetModel
 	templateCache map[string]*template.Template
 }
@@ -31,6 +34,12 @@ func StartApp() {
 
 	// Define a new command-line flag for the MySQL DSN string.
 	dsn := flag.String("dsn", "ptrak:Password!@#$@/codesnippet?parseTime=true", "MySQL database")
+
+	//Define a new command-line flag for the session secret (a random key which
+	// will be used to encrypt and authenticate session cookies). It should be 32
+	// bytes long.
+	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret")
+
 	// Importantly, we use the flag.Parse() to parse the command-line imput.
 	flag.Parse()
 
@@ -56,10 +65,17 @@ func StartApp() {
 		errorLog.Fatal(err)
 	}
 
+	// Use the session.New() function to initialize a new session manager
+	// passing in the secret key as the parameter. Then we configure it so
+	// session always expires after 12 hours.
+	session := sessions.New([]byte(*secret))
+	session.Lifetime = 12 * time.Hour
+
 	// Initialize a new instance of application containing the dependencies.
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		session:  session,
 		// Initialize a mysql.SnippetModel instance and add it to the application
 		// dependencies.
 		snippets:      &mysql.SnippetModel{DB: db},
