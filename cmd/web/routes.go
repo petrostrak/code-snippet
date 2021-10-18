@@ -41,6 +41,13 @@ func (a *application) routes() http.Handler {
 	// like so
 	mux.Get("/snippet/:id", a.session.Enable(http.HandlerFunc(a.showSnippet)))
 
+	// User routes
+	mux.Get("/user/signup", dynamicMiddleware.ThenFunc(a.signupUserForm))
+	mux.Post("/user/signup", dynamicMiddleware.ThenFunc(a.signupUser))
+	mux.Get("/user/login", dynamicMiddleware.ThenFunc(a.loginUserForm))
+	mux.Post("/user/login", dynamicMiddleware.ThenFunc(a.loginUser))
+	mux.Post("/user/logout", dynamicMiddleware.ThenFunc(a.logoutUser))
+
 	// Create a file server which serves files out of the ./ui/static/ dir.
 	// Note that the path given to the http.Dir() function is relative to the
 	// project directory root.
