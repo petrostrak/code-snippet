@@ -66,9 +66,19 @@ func (a *application) addDefaultData(td *templateData, r *http.Request) *templat
 		td = &templateData{}
 	}
 
+	// update our addDefaultData() helper method so that the
+	// user ID is automatically added to the templateData struct
+	// every time we render a template
+	td.AuthenticatedUser = a.authenticatedUser(r)
 	td.CurrentYear = time.Now().Year()
 
 	// Add the flash message to the template data, if one exists.
 	td.Flash = a.session.PopString(r, "flash")
 	return td
+}
+
+// The authenticatedUser method returns the ID of the current user from the
+// session, or zero if the request is from an unauthenticated user.
+func (a *application) authenticatedUser(r *http.Request) int {
+	return a.session.GetInt(r, "userID")
 }
