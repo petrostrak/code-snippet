@@ -27,7 +27,7 @@ func TestHumanDate(t *testing.T) {
 		},
 		{
 			name: "CET",
-			tm:   time.Date(2020, 12, 17, 10, 0, 0, 0, time.FixedZone("CET", 1*6)),
+			tm:   time.Date(2020, 12, 17, 10, 0, 0, 0, time.FixedZone("CET", 60*60)),
 			want: "17 Dec 2020 at 09:00",
 		},
 	}
@@ -39,8 +39,8 @@ func TestHumanDate(t *testing.T) {
 			// Check that the output from the humanDate function is in the format we
 			// expext. If it isn't what we expect, use the t.Errorf() to indicate that
 			// the test has failed and log the expected and actual values.
-			if hd != "17 Dec 2020 at 10:00" {
-				t.Errorf("want %q; got %q", "17 Dec 2020 at 10:00", hd)
+			if hd != tt.want {
+				t.Errorf("want %q; got %q", tt.want, hd)
 			}
 		})
 	}
