@@ -22,6 +22,7 @@ import (
 // data that we want to pass to our HTML templates.
 type templateData struct {
 	AuthenticatedUser int
+	CSRFToken         string
 	CurrentYear       int
 	Form              *forms.Form
 	Flash             string

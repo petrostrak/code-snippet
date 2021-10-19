@@ -27,7 +27,9 @@ func (a *application) routes() http.Handler {
 
 	//Create a new middleware chain containing the middleware specific to
 	// our dynamix application routes.
-	dynamicMiddleware := alice.New(a.session.Enable)
+	//
+	// Use the nosurf middleware on all 'dynamic' routes.
+	dynamicMiddleware := alice.New(a.session.Enable, noSurf)
 
 	// Use the http.NewServeMux() function to initialize a
 	// new servemux, then register the home function as the
