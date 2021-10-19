@@ -33,8 +33,10 @@ func (a *application) routes() http.Handler {
 	// new servemux, then register the home function as the
 	// handler for the "/" URL pattern.
 	mux.Get("/", dynamicMiddleware.ThenFunc(a.home))
-	mux.Get("/snippet/create", dynamicMiddleware.ThenFunc(a.createSnippetForm))
-	mux.Post("/snippet/create", dynamicMiddleware.ThenFunc(a.createSnippet))
+
+	// Add the requireAuthenticatedUser middleware to the chain
+	mux.Get("/snippet/create", dynamicMiddleware.Append(a.requireAuthenticatedUser).ThenFunc(a.createSnippetForm))
+	mux.Post("/snippet/create", dynamicMiddleware.Append(a.requireAuthenticatedUser).ThenFunc(a.createSnippet))
 
 	// If we don't want to use alice package for managing our middlewares, then we
 	// can simply wrap the handler functions with the session middleware instead
@@ -46,7 +48,9 @@ func (a *application) routes() http.Handler {
 	mux.Post("/user/signup", dynamicMiddleware.ThenFunc(a.signupUser))
 	mux.Get("/user/login", dynamicMiddleware.ThenFunc(a.loginUserForm))
 	mux.Post("/user/login", dynamicMiddleware.ThenFunc(a.loginUser))
-	mux.Post("/user/logout", dynamicMiddleware.ThenFunc(a.logoutUser))
+
+	// Add the requireAuthenticatedUser middleware to the chain
+	mux.Post("/user/logout", dynamicMiddleware.Append(a.requireAuthenticatedUser).ThenFunc(a.logoutUser))
 
 	// Create a file server which serves files out of the ./ui/static/ dir.
 	// Note that the path given to the http.Dir() function is relative to the
