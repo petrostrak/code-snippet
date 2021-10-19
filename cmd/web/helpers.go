@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/justinas/nosurf"
+	"github.com/petrostrak/code-snippet/pkg/models"
 )
 
 // The serverError helper writes an error message and stack trace to the errorLog
@@ -84,6 +85,10 @@ func (a *application) addDefaultData(td *templateData, r *http.Request) *templat
 
 // The authenticatedUser method returns the ID of the current user from the
 // session, or zero if the request is from an unauthenticated user.
-func (a *application) authenticatedUser(r *http.Request) int {
-	return a.session.GetInt(r, "userID")
+func (a *application) authenticatedUser(r *http.Request) *models.User {
+	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+	if !ok {
+		return nil
+	}
+	return user
 }

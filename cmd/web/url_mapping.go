@@ -15,6 +15,12 @@ import (
 	"github.com/petrostrak/code-snippet/pkg/models/mysql"
 )
 
+type contextKey string
+
+var (
+	contextKeyUser = contextKey("user")
+)
+
 // Define an application struct to hold the application-wide dependencies for
 // the web-app. Adding a snippet field to the struct will allow us to make the
 // SnippetModel object available to our handlers
