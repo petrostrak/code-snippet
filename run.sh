@@ -1,2 +1,3 @@
 # !/bin/zsh
-go run cmd/web/* -addr=":8080"
+cd cmd/web
+go run $(ls -1 *.go | grep -v _test.go) -addr=":8080"
