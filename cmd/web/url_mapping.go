@@ -41,7 +41,7 @@ func StartApp() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 
 	// Define a new command-line flag for the MySQL DSN string.
-	dsn := flag.String("dsn", "ptrak:Password!@#$@/codesnippet?parseTime=true", "MySQL database")
+	dsn := flag.String("dsn", "web:pass@/codesnippet?parseTime=true", "MySQL database")
 
 	//Define a new command-line flag for the session secret (a random key which
 	// will be used to encrypt and authenticate session cookies). It should be 32
